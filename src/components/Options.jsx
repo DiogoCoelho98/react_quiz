@@ -1,5 +1,4 @@
 export default function Options({ question, dispatch, answer }) {
-    console.log(question)
     if (!question || !question.options) {
       return null;
     }
