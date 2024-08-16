@@ -1,7 +1,5 @@
 export default function Options({ question, dispatch, answer }) {
-    if (!question || !question.options) {
-      return null;
-    }
+    if (!question || !question.options) return null;
   
     const hasAnswered = answer !== null;
   

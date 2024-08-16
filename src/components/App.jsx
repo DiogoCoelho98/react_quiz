@@ -7,8 +7,11 @@ import Question from "./Question.jsx";
 import NextButton from "./NextButton.jsx";
 import Progress from "./Progress.jsx"; 
 import FinalScreen from "./FinalScreen.jsx"
+import Timer from "./Timer.jsx";
 
 import {useEffect, useReducer} from "react";
+
+const secondsPerQuest = 20;
 
 function reducer(state, action) { 
   switch(action.type) {
@@ -17,7 +20,7 @@ function reducer(state, action) {
     case "dataFailed":
       return {...state, status: "error"};
     case "start":
-      return {...state, status: "active"};
+      return {...state, status: "active", timer: state.questions.length * secondsPerQuest};
     case "newAnswer":
       const currentQuestion = state.questions[state.index];
       const isCorrect = action.payload === currentQuestion.correctOption;
@@ -27,17 +30,19 @@ function reducer(state, action) {
     case "finish":
       return {...state, status: "finished", highScore: state.points > state.highScore ? state.points : state.highScore }
     case "reset":
-      return {...state, index: 0, answer:null, points: 0, status: "ready"}
+      return {...state, index: 0, answer:null, points: 0, status: "ready", timer: 10}
+    case "timer":
+      return {...state, timer: state.timer - 1, status: state.timer === 0 ? "finished" : state.status};
     default:
       throw new Error("Data not available");
   }
 }
 
-const initialValue = {questions: [], status: "loading", index: 0, answer: null, points: 0, highScore: 0};
+const initialValue = {questions: [], status: "loading", index: 0, answer: null, points: 0, highScore: 0, timer: null};
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialValue);
-  const {questions, status, index, answer, points, highScore} = state;
+  const {questions, status, index, answer, points, highScore, timer} = state;
 
   const maxPoints = questions.reduce((acc, curr) => acc + curr.points, 0);
 
@@ -67,6 +72,7 @@ export default function App() {
             <Progress index={index} questions={questions.length} points={points} maxPoints={maxPoints} answer={answer}/>
             <Question question={questions[index]} dispatch={dispatch} answer={answer}/> 
             <NextButton dispatch={dispatch} answer={answer} questions={questions.length} index={index}/>
+            <Timer timer={timer} dispatch={dispatch}/>
           </>
           }
           {status === "finished" && <FinalScreen points={points} maxPoints={maxPoints} highScore={highScore} dispatch={dispatch}/>}
